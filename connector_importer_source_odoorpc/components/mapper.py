@@ -38,14 +38,20 @@ class OdooRPCBaseMapper(Component):
                 # [{'id': 215, '_followed_from': 'user_ids',
                 #   'login': 'john.doe@foo.com',
                 #   '_line_nr': 215, '_model': 'res.users'}
-                search_value = [model_mapping[x][search_field]
+
+                # convert value to string here as dict keys in model_mapping
+                # are strings.
+                search_value = [model_mapping[str(x)][search_field]
                                 for x in search_value
-                                if model_mapping.get(x)]
+                                if model_mapping.get(str(x))]
             if search_value:
                 record[source_field] = search_value
                 converter = backend_to_rel(
                     source_field,
                     search_field=search_field,
+                    # we should force the 'in' search operator as we treat
+                    # m2o as x2m field and as a result get a list of 1 value
+                    search_operator='in',
                 )
                 converted_vals = converter(self, record, dest_field)
                 if (dest_field in values and
